@@ -1,0 +1,55 @@
+services:
+  mysql:
+    image: mysql:latest
+    container_name: MySQL
+    environment:
+      MYSQL_DATABASE: LocadoraDVD
+      MYSQL_ROOT_PASSWORD: senha
+    volumes:
+      - mysql-data:/var/lib/mysql
+
+  rabbitmq:
+    image: rabbitmq:latest
+    container_name: RabbitMQ
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
+
+  mongodb:
+    image: mongo:latest
+    container_name: MongoDB
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: mongo
+      MONGO_INITDB_ROOT_PASSWORD: senha
+      MONGO_INITDB_DATABASE: LocadoraDVD
+    volumes:
+      - mongo-data:/data/db
+
+  redis:
+    image: redis:latest
+    container_name: Redis
+  
+  backend:
+    build:
+      context: . 
+      dockerfile: Dockerfile
+    container_name: LocadoraDVD.API
+    depends_on:
+      - mysql
+      - rabbitmq
+      - mongodb
+      - redis
+    ports:
+      - "80:80"
+    environment:
+      MYSQL_URL: Host=mysql;Database=LocadoraDVD;Username=root;Password=senha
+      MONGO_URL: mongodb://mongo:senha@mongodb:27017
+      REDIS_URL: redis:6379
+      RABITMQHOST: rabbitmq
+      RABITMQUSER: guest      
+      RABITMQPASSWORD: guest  
+      ASPNETCORE_ENVIRONMENT: Development
+
+volumes:
+  mysql-data:
+  mongo-data:
